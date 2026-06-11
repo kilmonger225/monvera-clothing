@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-[#FFFFFF] text-[#1A1A1A] antialiased;
+  }
+  :root {
+    color-scheme: light;
+  }
+}
