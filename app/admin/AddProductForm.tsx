@@ -9,32 +9,33 @@ export default function AddProductForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const [isPending, startTransition] = useTransition();
 
-  // State to hold our Cloudinary URLs
   const [frontImage, setFrontImage] = useState("");
   const [backImage, setBackImage] = useState("");
 
-  const handleSubmit = (formData: FormData) => {
-    // 1. Validation check
+ const handleSubmit = (formData: FormData) => {
     if (!frontImage || !backImage) {
       toast.error("Please upload both front and back images first.");
       return;
     }
 
-    // 2. Add the URLs to the form data
+    // Send it with "Url" at the end...
     formData.append("frontImageUrl", frontImage);
     formData.append("backImageUrl", backImage);
+    
+    // AND send it WITHOUT "Url" at the end so the backend cannot possibly miss it!
+    formData.append("frontImage", frontImage);
+    formData.append("backImage", backImage);
 
-    // 3. Send to server
     startTransition(async () => {
       const res = await addProduct(formData);
       
       if (res.success) {
         toast.success("Product and images uploaded!");
         formRef.current?.reset(); 
-        setFrontImage(""); // Clear images
+        setFrontImage(""); 
         setBackImage("");
       } else {
-        toast.error("Failed to upload product");
+        toast.error(`Error: ${(res as any).message || "Failed to upload product"}`); 
       }
     });
   };
@@ -43,6 +44,9 @@ export default function AddProductForm() {
     <form ref={formRef} action={handleSubmit} className="bg-[#FFFFFF] p-6 border border-[#E5E5E5] shadow-sm mb-8">
       <h3 className="text-sm font-bold text-[#1A1A1A]/70 uppercase tracking-widest mb-4">Add New Drop</h3>
       
+      <input type="hidden" name="frontImageUrl" value={frontImage} />
+      <input type="hidden" name="backImageUrl" value={backImage} />
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
           <label className="block text-xs font-bold text-[#1A1A1A] mb-2 uppercase">Product Name</label>
@@ -55,11 +59,10 @@ export default function AddProductForm() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        {/* FRONT IMAGE UPLOADER */}
         <div>
           <label className="block text-xs font-bold text-[#1A1A1A] mb-2 uppercase">Front Image</label>
           <CldUploadWidget 
-            uploadPreset="YOUR_UPLOAD_PRESET" 
+            uploadPreset="monvera_drops" 
             onSuccess={(result: any) => setFrontImage(result.info.secure_url)}
           >
             {({ open }) => (
@@ -71,11 +74,10 @@ export default function AddProductForm() {
           {frontImage && <img src={frontImage} alt="Front preview" className="mt-2 h-20 w-20 object-cover border" />}
         </div>
 
-        {/* BACK IMAGE UPLOADER */}
         <div>
           <label className="block text-xs font-bold text-[#1A1A1A] mb-2 uppercase">Back Image</label>
           <CldUploadWidget 
-            uploadPreset="YOUR_UPLOAD_PRESET" 
+            uploadPreset="monvera_drops" 
             onSuccess={(result: any) => setBackImage(result.info.secure_url)}
           >
             {({ open }) => (
