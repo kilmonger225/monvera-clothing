@@ -2,9 +2,8 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
 
-// Define what a single item in the cart looks like
 export interface CartItem {
-  id: string; // A unique ID combining the product ID and its size
+  id: string; 
   productId: string;
   name: string;
   price: number;
@@ -21,6 +20,7 @@ interface CartContextType {
   addToCart: (item: Omit<CartItem, "id">) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
+  clearCart: () => void; // <-- 1. ADDED THIS
   cartCount: number;
 }
 
@@ -34,22 +34,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const closeCart = () => setIsOpen(false);
 
   const addToCart = (newItem: Omit<CartItem, "id">) => {
-    // FIX: Restored the $ syntax for JavaScript string interpolation
     const id = `${newItem.productId}-${newItem.size}`;
     
     setCartItems((prev) => {
       const existingItem = prev.find((item) => item.id === id);
       if (existingItem) {
-        // If it exists, just increase the quantity
         return prev.map((item) =>
           item.id === id ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      // Otherwise, add the new item
       return [...prev, { ...newItem, id }];
     });
     
-    setIsOpen(true); // Auto-open drawer when an item is added
+    setIsOpen(true);
   };
 
   const removeFromCart = (id: string) => {
@@ -63,11 +60,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
     );
   };
 
-  // Calculate total number of items for the header dot
+  // <-- 2. CREATED THE FUNCTION
+  const clearCart = () => {
+    setCartItems([]);
+  };
+
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ isOpen, openCart, closeCart, cartItems, addToCart, removeFromCart, updateQuantity, cartCount }}>
+    // <-- 3. EXPORTED IT IN THE VALUE
+    <CartContext.Provider value={{ isOpen, openCart, closeCart, cartItems, addToCart, removeFromCart, updateQuantity, clearCart, cartCount }}>
       {children}
     </CartContext.Provider>
   );

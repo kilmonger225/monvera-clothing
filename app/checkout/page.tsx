@@ -1,12 +1,13 @@
 "use client";
-
-import { useState } from "react";
+import { saveOrderToDatabase } from "@/app/actions/order";import { useState } from "react";
 import Link from "next/link";
-import { ChevronRight, Lock, CreditCard } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { CreditCard, Trash2, Plus, Minus } from "lucide-react";
 import { useCart } from "@/components/store/CartContext";
 import { nigerianStates } from "@/lib/locations";
 import { usePaystackPayment } from "react-paystack";
 import { sendOrderNotification } from "@/actions/email";
+import toast from "react-hot-toast";
 
 const shippingOptions = [
   { id: 'pickup_atbu', name: 'Pickup (ATBU Yelwa)', price: 0 },
@@ -15,9 +16,10 @@ const shippingOptions = [
 ];
 
 export default function CheckoutPage() {
-  const { cartItems } = useCart();
+  // 1. Destructured clearCart here
+  const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
+  const router = useRouter();
   
-  // 1. NEW STATE TRACKERS FOR SHIPPING DETAILS
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -48,14 +50,13 @@ export default function CheckoutPage() {
 
   const initializePayment = usePaystackPayment(paystackConfig);
 
-  const handlePaystackSuccess = async (reference: any) => {
+ const handlePaystackSuccess = async (reference: any) => {
     console.log("Payment Confirmed!", reference);
     
-    // 2. PACKAGING ALL THE NEW DATA FOR THE EMAIL
     const orderDetails = {
       reference: reference.reference,
       email: email,
-      amount: total * 100,
+      amount: total * 100, // kobo
       items: cartItems,
       shippingMethod: shippingMethodId,
       shippingDetails: {
@@ -69,13 +70,24 @@ export default function CheckoutPage() {
       }
     };
 
-    const result = await sendOrderNotification(orderDetails);
+    // 1. Send the email receipt
+    const emailResult = await sendOrderNotification(orderDetails);
+    
+    // 2. Save to the database
+    const dbResult = await saveOrderToDatabase(orderDetails);
 
-    if (result?.success) {
-      alert(`Success! Payment secured and receipt sent. Reference: ${reference.reference}`);
+    // 3. Clear the cart
+    clearCart();
+
+    if (emailResult?.success && dbResult?.success) {
+      toast.success("Payment secured and order recorded!");
+    } else if (dbResult?.success) {
+      toast.error("Order recorded, but receipt email failed.");
     } else {
-      alert("Payment secured, but there was an issue sending the email receipt.");
+      toast.error("Payment secured, but there was a system error recording the order.");
     }
+    
+    router.push(`/success?reference=${reference.reference}`);
   };
 
   const handlePaystackClose = () => {
@@ -83,11 +95,17 @@ export default function CheckoutPage() {
   };
 
   const processOrder = () => {
-    if (!email || !firstName || !lastName || !address || !phone || !selectedState) {
-      alert("Please fill in all required shipping details before paying.");
+    // 3. Added selectedLGA to make sure LGA is selected before paying
+    if (!email || !firstName || !lastName || !address || !phone || !selectedState || !selectedLGA) {
+      toast.error("Please fill in all required shipping details.");
       return;
     }
     initializePayment({ onSuccess: handlePaystackSuccess, onClose: handlePaystackClose });
+  };
+
+  const handleRemoveItem = (id: string) => {
+    removeFromCart(id);
+    toast.success("Item removed from cart");
   };
 
   if (cartItems.length === 0) {
@@ -110,26 +128,26 @@ export default function CheckoutPage() {
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" required className="w-full p-4 border border-[#E5E5E5] bg-[#F5F5F5] focus:border-[#000000] focus:bg-[#FFFFFF] outline-none transition-all" />
           </section>
 
-          {/* 3. WIRING THE INPUTS TO STATE */}
+          {/* Shipping Address */}
           <section>
             <h2 className="text-xl font-bold text-[#1A1A1A] mb-4">Shipping Address</h2>
             <div className="grid grid-cols-2 gap-4">
-              <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name" className="w-full p-4 border border-[#E5E5E5] bg-[#F5F5F5] focus:border-[#000000] focus:bg-[#FFFFFF] outline-none" />
-              <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last name" className="w-full p-4 border border-[#E5E5E5] bg-[#F5F5F5] focus:border-[#000000] focus:bg-[#FFFFFF] outline-none" />
-              <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street Address" className="col-span-2 w-full p-4 border border-[#E5E5E5] bg-[#F5F5F5] focus:border-[#000000] focus:bg-[#FFFFFF] outline-none" />
+              <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name" required className="w-full p-4 border border-[#E5E5E5] bg-[#F5F5F5] focus:border-[#000000] focus:bg-[#FFFFFF] outline-none" />
+              <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last name" required className="w-full p-4 border border-[#E5E5E5] bg-[#F5F5F5] focus:border-[#000000] focus:bg-[#FFFFFF] outline-none" />
+              <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street Address" required className="col-span-2 w-full p-4 border border-[#E5E5E5] bg-[#F5F5F5] focus:border-[#000000] focus:bg-[#FFFFFF] outline-none" />
               <input type="text" value={apartment} onChange={(e) => setApartment(e.target.value)} placeholder="Apartment, suite, etc. (optional)" className="col-span-2 w-full p-4 border border-[#E5E5E5] bg-[#F5F5F5] focus:border-[#000000] focus:bg-[#FFFFFF] outline-none" />
               
-              <select value={selectedState} onChange={(e) => { setSelectedState(e.target.value); setSelectedLGA(""); }} className="w-full p-4 border border-[#E5E5E5] bg-[#F5F5F5] focus:border-[#000000] focus:bg-[#FFFFFF] outline-none">
+              <select value={selectedState} onChange={(e) => { setSelectedState(e.target.value); setSelectedLGA(""); }} required className="w-full p-4 border border-[#E5E5E5] bg-[#F5F5F5] focus:border-[#000000] focus:bg-[#FFFFFF] outline-none">
                 <option value="" disabled>Select State</option>
                 {Object.keys(nigerianStates).map(state => <option key={state} value={state}>{state}</option>)}
               </select>
 
-              <select value={selectedLGA} onChange={(e) => setSelectedLGA(e.target.value)} disabled={!selectedState} className="w-full p-4 border border-[#E5E5E5] bg-[#F5F5F5] focus:border-[#000000] focus:bg-[#FFFFFF] outline-none disabled:opacity-50">
+              <select value={selectedLGA} onChange={(e) => setSelectedLGA(e.target.value)} required disabled={!selectedState} className="w-full p-4 border border-[#E5E5E5] bg-[#F5F5F5] focus:border-[#000000] focus:bg-[#FFFFFF] outline-none disabled:opacity-50">
                 <option value="" disabled>Select LGA</option>
                 {availableLGAs?.map(lga => <option key={lga} value={lga}>{lga}</option>)}
               </select>
 
-              <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone Number" className="col-span-2 w-full p-4 border border-[#E5E5E5] bg-[#F5F5F5] focus:border-[#000000] focus:bg-[#FFFFFF] outline-none" />
+              <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone Number" required className="col-span-2 w-full p-4 border border-[#E5E5E5] bg-[#F5F5F5] focus:border-[#000000] focus:bg-[#FFFFFF] outline-none" />
             </div>
           </section>
 
@@ -155,23 +173,73 @@ export default function CheckoutPage() {
         </form>
       </div>
 
-      {/* Right Column Summary Code Remains Identical... */}
+      {/* Right Column Summary */}
       <div className="w-full lg:w-[45%] xl:w-[40%] bg-[#F5F5F5] px-6 py-12 lg:pl-12 border-t lg:border-t-0 border-[#E5E5E5] h-full lg:min-h-screen sticky top-0">
         <h2 className="text-xl font-bold text-[#1A1A1A] mb-8">Order Summary</h2>
         <div className="space-y-6 mb-8">
           {cartItems.map((item) => (
-            <div key={item.id} className="flex gap-4 items-center">
-              <div className="relative w-16 h-20 bg-[#FFFFFF] border border-[#E5E5E5] flex-shrink-0">
-                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#1A1A1A] text-[10px] font-bold text-[#FFFFFF]">{item.quantity}</span>
+            <div key={item.id} className="flex flex-col gap-4 group">
+              <div className="flex gap-4 items-center">
+                <div className="relative w-16 h-20 bg-[#FFFFFF] border border-[#E5E5E5] flex-shrink-0">
+                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-bold text-[#1A1A1A]">{item.name}</h3>
+                  <p className="text-xs font-medium text-[#1A1A1A]/70 mt-1">Size: {item.size}</p>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <p className="text-sm font-bold text-[#1A1A1A]">{formatNaira(item.price * item.quantity)}</p>
+                </div>
               </div>
-              <div className="flex-1">
-                <h3 className="text-sm font-bold text-[#1A1A1A]">{item.name}</h3>
-                <p className="text-xs font-medium text-[#1A1A1A]/70 mt-1">Size: {item.size}</p>
+              
+              {/* Quantity Adjusters and Remove Icon inside Checkout Summary */}
+              <div className="flex justify-between items-center bg-[#FFFFFF] p-2 border border-[#E5E5E5]">
+                <div className="flex items-center">
+                  <button 
+                    type="button"
+                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                    disabled={item.quantity <= 1}
+                    className="p-1 hover:bg-[#F5F5F5] disabled:opacity-50 transition-colors"
+                  >
+                    <Minus size={14} />
+                  </button>
+                  <span className="w-8 text-center text-xs font-bold">{item.quantity}</span>
+                  <button 
+                    type="button"
+                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                    className="p-1 hover:bg-[#F5F5F5] transition-colors"
+                  >
+                    <Plus size={14} />
+                  </button>
+                </div>
+                
+                <button
+                  type="button"
+                  onClick={() => handleRemoveItem(item.id)}
+                  className="text-red-500 hover:text-red-700 transition-colors p-1"
+                  title="Remove item"
+                >
+                  <Trash2 size={16} />
+                </button>
               </div>
-              <p className="text-sm font-bold text-[#1A1A1A]">{formatNaira(item.price * item.quantity)}</p>
             </div>
           ))}
+        </div>
+        
+        {/* Subtotal & Total display below items */}
+        <div className="border-t border-[#E5E5E5] pt-6 space-y-4">
+          <div className="flex justify-between text-sm">
+            <span className="text-[#1A1A1A]/70">Subtotal</span>
+            <span className="font-bold text-[#1A1A1A]">{formatNaira(subtotal)}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-[#1A1A1A]/70">Shipping</span>
+            <span className="font-bold text-[#1A1A1A]">{activeShipping?.price === 0 ? "FREE" : formatNaira(shippingCost)}</span>
+          </div>
+          <div className="flex justify-between text-lg pt-4 border-t border-[#1A1A1A]">
+            <span className="font-bold text-[#1A1A1A]">Total</span>
+            <span className="font-bold text-[#1A1A1A]">{formatNaira(total)}</span>
+          </div>
         </div>
       </div>
     </div>

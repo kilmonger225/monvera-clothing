@@ -1,10 +1,12 @@
 import { FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa6";
 
+import { Trash2 } from "lucide-react"; // Nice icon for the button
+
 export default function ContactPage() {
   const socialLinks = [
     { name: "Instagram", href: "https://instagram.com/yourhandle", icon: <FaInstagram size={20} /> },
     { name: "TikTok", href: "https://tiktok.com/@yourhandle", icon: <FaTiktok size={20} /> },
-    { name: "WhatsApp", href: "https://wa.me/yournumber", icon: <FaWhatsapp size={20} /> },
+    { name: "WhatsApp", href: "https://wa.me/+2348145818057", icon: <FaWhatsapp size={20} /> },
   ];
 
   return (

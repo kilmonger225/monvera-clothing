@@ -11,17 +11,20 @@ interface ProductProps {
   price: number;
   imageFront: string;
   imageBack: string;
+  stock: number; // Added stock
 }
 
-export default function ProductCard({ id, name, price, imageFront, imageBack }: ProductProps) {
+export default function ProductCard({ id, name, price, imageFront, imageBack, stock }: ProductProps) {
   const [showSizes, setShowSizes] = useState(false);
   const { addToCart } = useCart();
   const sizes = ["S", "M", "L", "XL", "XXL"];
+  
+  const isOutOfStock = stock === 0;
 
   const handleQuickAddClick = (e: React.MouseEvent) => {
     e.preventDefault(); 
     e.stopPropagation();
-    setShowSizes(true);
+    if (!isOutOfStock) setShowSizes(true);
   };
 
   const handleSizeSelect = (e: React.MouseEvent, size: string) => {
@@ -29,7 +32,6 @@ export default function ProductCard({ id, name, price, imageFront, imageBack }: 
     e.stopPropagation();
     setShowSizes(false);
     
-    // Dispatch actual data to the global cart
     addToCart({
       productId: id,
       name,
@@ -44,7 +46,6 @@ export default function ProductCard({ id, name, price, imageFront, imageBack }: 
     <div className="group flex flex-col">
       <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#F5F5F5] mb-4 cursor-pointer">
         
-        {/* We wrap the images in the link so clicking anywhere on the image goes to details */}
         <Link href={`/product/${id}`} className="absolute inset-0 z-0">
           <img
             src={imageBack}
@@ -81,12 +82,17 @@ export default function ProductCard({ id, name, price, imageFront, imageBack }: 
           </div>
         ) : (
           <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 transform translate-y-4 transition-all duration-300 ease-in-out group-hover:opacity-100 group-hover:translate-y-0 flex gap-2 z-10">
-<Link 
-  href={`/product/${id}`} 
-  className="flex-1 bg-[#FFFFFF] text-[#1A1A1A] text-xs font-bold py-3 flex items-center justify-center uppercase tracking-wider hover:bg-[#1A1A1A] hover:text-[#FFFFFF] transition-colors"
->              View Details
+            <Link 
+              href={`/product/${id}`} 
+              className="flex-1 bg-[#FFFFFF] text-[#1A1A1A] text-xs font-bold py-3 flex items-center justify-center uppercase tracking-wider hover:bg-[#1A1A1A] hover:text-[#FFFFFF] transition-colors"
+            >
+              View Details
             </Link>
-            <button onClick={handleQuickAddClick} className="bg-[#FFFFFF] text-[#1A1A1A] p-3 flex items-center justify-center hover:bg-[#1A1A1A] hover:text-[#FFFFFF] transition-colors">
+            <button 
+              onClick={handleQuickAddClick} 
+              disabled={isOutOfStock}
+              className={`p-3 flex items-center justify-center transition-colors ${isOutOfStock ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-[#FFFFFF] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-[#FFFFFF]"}`}
+            >
               <ShoppingBag size={16} />
             </button>
           </div>
@@ -97,7 +103,9 @@ export default function ProductCard({ id, name, price, imageFront, imageBack }: 
         <Link href={`/product/${id}`} className="text-sm font-bold text-[#1A1A1A] hover:underline underline-offset-4">
           {name}
         </Link>
-        <span className="text-sm font-medium text-[#1A1A1A]/80">₦{price.toFixed(2)}</span>
+        <span className="text-sm font-medium text-[#1A1A1A]/80">
+          {isOutOfStock ? "SOLD OUT" : `₦${price.toFixed(2)}`}
+        </span>
       </div>
     </div>
   );
