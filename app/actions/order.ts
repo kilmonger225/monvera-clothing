@@ -2,8 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-
-// 🚨 COMPLETELY REMOVED THE EMAIL IMPORT FOR ISOLATION
+import { sendStatusUpdateEmail } from "@/actions/email"; // Restored email import
 
 export async function saveOrderToDatabase(orderDetails: any) {
   try {
@@ -26,25 +25,43 @@ export async function saveOrderToDatabase(orderDetails: any) {
       }
     });
 
-    // 🔥 KILLING REVALIDATION: If this stops the crash, your shop/admin pages had bad data!
     return { success: true };
- } catch (error: any) {
-  console.error("CRITICAL_BACKEND_FAILURE:", error);
-  // We return the actual error string so the frontend shows us what is broken
-  return { success: false, message: error.toString() };
+  } catch (error: any) {
+    console.error("CRITICAL_BACKEND_FAILURE:", error);
+    return { success: false, message: error.toString() };
+  }
 }
-}
+
+export async function deleteProduct(productId: string) {
+  try {
+    await prisma.product.delete({
+      where: { id: productId },
+    });
+    
+    // Update the path where your products are listed
+    revalidatePath("/admin/products"); 
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete product:", error);
+    return { success: false, message: "Could not delete product." };
+  }}
 
 export async function updateOrderStatus(orderId: string, newStatus: string, email: string, reference: string) {
   try {
+    // 1. Update the database
     await prisma.order.update({
       where: { id: orderId },
       data: { status: newStatus },
     });
+
+    // 2. Trigger the status update email
+    await sendStatusUpdateEmail(email, newStatus, reference);
+
     revalidatePath("/admin");
     revalidatePath("/admin/orders");
     return { success: true };
   } catch (error: any) {
+    console.error("Status update error:", error);
     return { success: false, message: "Status update failed" };
   }
 }

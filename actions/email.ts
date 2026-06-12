@@ -3,7 +3,27 @@
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-
+export async function sendStatusUpdateEmail(email: string, status: string, reference: string) {
+  try {
+    await resend.emails.send({
+      from: "Monvera <orders@contact.monveraclothing.store>",
+      to: [email],
+      subject: `Order Update: ${reference} - ${status}`,
+      html: `
+        <div style="font-family: Arial, sans-serif;">
+          <h1>Order Update</h1>
+          <p>Hello,</p>
+          <p>Your order <strong>${reference}</strong> has been updated to: <strong>${status}</strong>.</p>
+          <p>Thank you for shopping with Monvera!</p>
+        </div>
+      `
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Error sending status update:", error);
+    return { success: false };
+  }
+}
 export async function sendOrderNotification(orderData: any) {
   console.log("DEBUG: Email function triggered.");
 

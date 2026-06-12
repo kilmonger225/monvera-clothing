@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { Package } from "lucide-react";
 import AddProductForm from "../AddProductForm";
 import StockManager from "@/components/admin/StockManager";
+import DeleteButton from "@/components/admin/DeleteButton";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +44,9 @@ export default async function AdminProducts() {
                   key={product.id}
                   className="border-b border-[#E5E5E5] hover:bg-[#F9F9F9] transition-colors"
                 >
+                  <td className="p-4">
+                    <DeleteButton productId={product.id} />
+                  </td>
                   <td className="p-4">
                     <img
                       src={product.imageFront}
