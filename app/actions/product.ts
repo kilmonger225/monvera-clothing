@@ -2,53 +2,30 @@
 
 import { PrismaClient } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
-import { existsSync } from "fs";
 
 const prisma = new PrismaClient();
 
-export async function createProduct(formData: FormData) {
+export async function addProduct(formData: FormData) {
   try {
     // 1. Extract the text data
     const name = formData.get("name") as string;
     const slug = name.toLowerCase().trim().replace(/[\s\W-]+/g, '-');
-    const description = formData.get("description") as string;
+    
+    // Adding a fallback in case your form doesn't have a description input yet
+    const description = (formData.get("description") as string) || "Premium Monvera Drop"; 
+    
     const price = parseFloat(formData.get("price") as string);
-    const stock = parseInt(formData.get("stock") as string); // Added your stock counter!
+    const stock = parseInt(formData.get("stock") as string); 
 
-    // 2. Extract the actual FILE objects, not just text strings
-    const frontFile = formData.get("imageFront") as File;
-    const backFile = formData.get("imageBack") as File;
+    // 2. Extract the Cloudinary URL strings (No physical files here!)
+    const imageFront = formData.get("frontImageUrl") as string;
+    const imageBack = formData.get("backImageUrl") as string;
 
-    if (!frontFile || !backFile) {
+    if (!imageFront || !imageBack) {
       throw new Error("Both front and back images are required to drop a product.");
     }
 
-    // 3. The Engine: Converts physical files to data and saves them to your /public folder
-    const saveImage = async (file: File) => {
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-
-      const uniqueName = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
-      const uploadDir = path.join(process.cwd(), "public/images");
-      const filePath = path.join(uploadDir, uniqueName);
-
-      if (!existsSync(uploadDir)) {
-        await mkdir(uploadDir, { recursive: true });
-      }
-
-      await writeFile(filePath, buffer);
-      
-      // Returns the clean local URL that the storefront will use to render the image
-      return `/images/${uniqueName}`;
-    };
-
-    // Save the physical images and capture their new paths
-    const imageFrontPath = await saveImage(frontFile);
-    const imageBackPath = await saveImage(backFile);
-
-    // 4. Command Prisma to save the complete garment profile to the database
+    // 3. Command Prisma to save the complete garment profile to the Neon database
     await prisma.product.create({
       data: {
         name,
@@ -56,12 +33,12 @@ export async function createProduct(formData: FormData) {
         description,
         price,
         stock,
-        imageFront: imageFrontPath,
-        imageBack: imageBackPath,
+        imageFront,
+        imageBack,
       },
     });
 
-    // 5. Instantly refresh the storefront and admin panel
+    // 4. Instantly refresh the storefront and admin panel
     revalidatePath("/shop");
     revalidatePath("/admin/products");
     
@@ -71,7 +48,10 @@ export async function createProduct(formData: FormData) {
     return { success: false };
   }
 }
-// Add this below your existing createProduct function
+
+// --------------------------------------------------------
+// Your existing stock update function remains unchanged!
+// --------------------------------------------------------
 export async function updateProductStock(id: string, newStock: number) {
   try {
     await prisma.product.update({
