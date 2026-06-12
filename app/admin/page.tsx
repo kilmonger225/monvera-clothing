@@ -1,59 +1,93 @@
-// app/admin/page.tsx
-import { DollarSign, ShoppingBag, Package, Users } from "lucide-react";
-import prisma from "@/lib/prisma"; 
+import prisma from "@/lib/prisma";
+import { Package } from "lucide-react";
+import AddProductForm from "./AddProductForm";
+import StockManager from "@/components/admin/StockManager";
+import DeleteButton from "@/components/admin/DeleteButton";
+import AdminGuard from "@/components/admin/AdminGuard";
 
 export const dynamic = "force-dynamic";
+const handleLogout = () => {
+  localStorage.removeItem("isAdmin");
+  window.location.href = "/admin/login";
+};
 
-export default async function AdminDashboard() {
-    
-  // 1. Fetch real data from your database concurrently
-  const [totalOrders, totalProducts, revenueQuery] = await Promise.all([
-    prisma.order.count(),
-    prisma.product.count(),
-    prisma.order.aggregate({ _sum: { amount: true } }) // Fetching the actual revenue!
-  ]);
+// Example button
+<button 
+  onClick={handleLogout}
+  className="text-xs font-bold uppercase tracking-widest text-red-600 hover:text-red-800"
+>
+  Logout
+</button>
+export default async function AdminProducts() {
+  const products = await prisma.product.findMany({
+    orderBy: { createdAt: "desc" },
+  });
 
-  // Safely extract the revenue (if there are no orders yet, it defaults to 0)
-  const totalRevenue = revenueQuery._sum.amount || 0;
-
-  // 2. Inject the dynamic data into your stats array
-
-  const stats = [
-  { 
-    title: "Total Revenue", 
-    value: `₦${totalRevenue.toLocaleString()}`, 
-    icon: DollarSign 
-  }, 
-  { 
-    title: "Active Orders", 
-    value: totalOrders.toString(), 
-    icon: ShoppingBag 
-  },
-  { 
-    title: "Products Listed", 
-    value: totalProducts.toString(), 
-    icon: Package 
-  },
-];
   return (
-    <div className="p-8">
-      <h2 className="text-2xl font-bold text-[#1A1A1A] mb-8">Dashboard Overview</h2>
+    <AdminGuard>
+      <div className="p-8">
+        <div className="flex items-center gap-3 mb-8">
+          <Package size={24} className="text-[#1A1A1A]" />
+          <h2 className="text-2xl font-bold text-[#1A1A1A]">Inventory Management</h2>
+        </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        {stats.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <div key={index} className="bg-[#FFFFFF] p-6 border border-[#E5E5E5] shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-[#1A1A1A]/70 uppercase tracking-widest">{stat.title}</h3>
-                <Icon size={20} className="text-[#1A1A1A]" />
-              </div>
-              <p className="text-3xl font-bold text-[#1A1A1A]">{stat.value}</p>
-            </div>
-          );
-        })}
+        <AddProductForm />
+
+        <div className="bg-[#FFFFFF] border border-[#E5E5E5] shadow-sm overflow-hidden">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-[#F5F5F5] border-b border-[#E5E5E5] text-sm tracking-widest uppercase text-[#1A1A1A]/70">
+                <th className="p-4 font-bold">Action</th>
+                <th className="p-4 font-bold">Image</th>
+                <th className="p-4 font-bold">Product Name</th>
+                <th className="p-4 font-bold">Price</th>
+                <th className="p-4 font-bold">Adjust Stock</th>
+                <th className="p-4 font-bold">Date Added</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm">
+              {products.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="p-8 text-center text-[#1A1A1A]/50">
+                    No products in inventory.
+                  </td>
+                </tr>
+              ) : (
+                products.map((product) => (
+                  <tr
+                    key={product.id}
+                    className="border-b border-[#E5E5E5] hover:bg-[#F9F9F9] transition-colors"
+                  >
+                    <td className="p-4">
+                      <DeleteButton productId={product.id} />
+                    </td>
+                    <td className="p-4">
+                      <img
+                        src={product.imageFront}
+                        alt={product.name}
+                        className="w-12 h-12 object-cover rounded-md border border-[#E5E5E5]"
+                      />
+                    </td>
+                    <td className="p-4 font-medium">{product.name}</td>
+                    <td className="p-4 font-bold">
+                      ₦{product.price.toLocaleString()}
+                    </td>
+                    <td className="p-4">
+                      <StockManager 
+                        productId={product.id} 
+                        currentStock={product.stock} 
+                      />
+                    </td>
+                    <td className="p-4 text-[#1A1A1A]/70">
+                      {new Date(product.createdAt).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </AdminGuard>
   );
 }
