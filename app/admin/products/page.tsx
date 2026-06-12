@@ -38,15 +38,15 @@ export default async function AdminProducts() {
                   No products in inventory.
                 </td>
               </tr>
-            ) : (
+            ) :
+            
+             (
               products.map((product) => (
                 <tr
                   key={product.id}
                   className="border-b border-[#E5E5E5] hover:bg-[#F9F9F9] transition-colors"
                 >
-                  <td className="p-4">
-                    <DeleteButton productId={product.id} />
-                  </td>
+                 <DeleteButton key={product.id} productId={product.id} />
                   <td className="p-4">
                     <img
                       src={product.imageFront}

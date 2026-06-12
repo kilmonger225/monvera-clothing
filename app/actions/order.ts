@@ -34,17 +34,23 @@ export async function saveOrderToDatabase(orderDetails: any) {
 
 export async function deleteProduct(productId: string) {
   try {
+    console.log("Attempting to delete product ID:", productId);
+    
     await prisma.product.delete({
       where: { id: productId },
     });
     
-    // Update the path where your products are listed
     revalidatePath("/admin/products"); 
     return { success: true };
-  } catch (error) {
-    console.error("Failed to delete product:", error);
-    return { success: false, message: "Could not delete product." };
-  }}
+  } catch (error: any) {
+    // This logs the specific Prisma error (e.g., P2003, P2025)
+    console.error("DETAILED DELETE ERROR:", error);
+    return { 
+      success: false, 
+      message: error.message || "Database error: check terminal logs" 
+    };
+  }
+}
 
 export async function updateOrderStatus(orderId: string, newStatus: string, email: string, reference: string) {
   try {
