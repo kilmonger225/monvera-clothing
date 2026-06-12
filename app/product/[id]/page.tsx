@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
-// CORRECT
-import ProductDetailClient from "@/components/store/ProductDetailClient";
+import ProductDetailClient from "@/components/store/ProductDetailClient"; // We'll create this to handle the client-side state
+
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
