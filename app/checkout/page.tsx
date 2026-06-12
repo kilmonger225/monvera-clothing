@@ -51,7 +51,6 @@ export default function CheckoutPage() {
       toast.error("Please fill in contact details");
       return;
     }
-    // Conditional Validation
     if (shippingMethodId !== 'pickup_atbu') {
       if (!address || !selectedLGA || (!selectedState && shippingMethodId !== 'within_bauchi')) {
         toast.error("Please fill out full shipping details");
@@ -94,10 +93,20 @@ export default function CheckoutPage() {
     }
   };
 
+  if (cartItems.length === 0) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center bg-[#FFFFFF] px-6">
+        <h2 className="text-2xl font-bold mb-4 tracking-widest uppercase text-[#1A1A1A]">Your bag is empty</h2>
+        <Link href="/shop" className="px-10 py-4 bg-[#1A1A1A] text-white text-sm font-bold uppercase tracking-wider hover:bg-[#333333] transition-colors">Return to Shop</Link>
+      </div>
+    );
+  }
+
   const inputClass = "w-full p-4 border border-[#E5E5E5] bg-white outline-none focus:border-[#1A1A1A] transition-colors text-sm placeholder:text-gray-400";
 
   return (
     <div className="min-h-screen flex flex-col-reverse lg:flex-row bg-white">
+      {/* LEFT SIDE: FORM */}
       <div className="w-full lg:w-[55%] p-6 lg:p-12 xl:p-20">
         <div className="max-w-xl ml-auto">
           <h2 className="text-lg font-bold uppercase tracking-widest text-[#1A1A1A] mb-4">Contact</h2>
@@ -162,7 +171,45 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
-      {/* Sidebar remains the same */}
+
+      {/* RIGHT SIDE: CART SUMMARY (THE PART THAT WAS MISSING) */}
+      <div className="w-full lg:w-[45%] p-6 lg:p-12 xl:p-20 bg-[#FAFAFA] border-b lg:border-b-0 lg:border-l border-[#E5E5E5]">
+        <div className="max-w-md mr-auto">
+          <div className="flex flex-col gap-4 mb-8 max-h-[50vh] overflow-y-auto pr-2">
+            {cartItems.map((item) => (
+              <div key={item.id} className="flex items-center gap-4">
+                <div className="relative w-16 h-16 bg-[#E5E5E5] border border-gray-200 rounded-sm overflow-hidden flex-shrink-0">
+                  <img src={(item as any).imageFront || (item as any).image || "/placeholder.jpg"} alt={item.name} className="object-cover w-full h-full" />
+                  <div className="absolute -top-2 -right-2 bg-gray-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full z-10">
+                    {item.quantity}
+                  </div>
+                </div>
+                <div className="flex-grow">
+                  <h4 className="text-sm font-bold text-[#1A1A1A]">{item.name}</h4>
+                  <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                </div>
+                <p className="text-sm font-medium text-[#1A1A1A]">{formatNaira(item.price * item.quantity)}</p>
+              </div>
+            ))}
+          </div>
+          <div className="border-t border-[#E5E5E5] pt-4 space-y-4">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Subtotal</span>
+              <span className="font-medium text-[#1A1A1A]">{formatNaira(subtotal)}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Shipping</span>
+              <span className="font-medium text-[#1A1A1A]">{shippingCost === 0 ? "Free" : formatNaira(shippingCost)}</span>
+            </div>
+          </div>
+          <div className="border-t border-[#E5E5E5] mt-4 pt-4">
+            <div className="flex justify-between items-end">
+              <span className="text-base font-bold uppercase tracking-widest text-[#1A1A1A]">Total</span>
+              <span className="text-2xl font-bold text-[#1A1A1A]">{formatNaira(total)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
