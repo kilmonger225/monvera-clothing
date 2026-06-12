@@ -4,9 +4,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   // This tells Next.js to skip linting during the Vercel build
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+
 };
 
 export default nextConfig;
