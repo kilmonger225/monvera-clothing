@@ -15,12 +15,34 @@ export async function sendOrderNotification(orderData: any) {
   try {
     const { reference, email, amount, items, shippingMethod, shippingDetails } = orderData;
 
-    // 1. Send Admin Email
+    // 1. Send Admin Email (Styled like image_69fbf6.png)
     const adminEmail = await resend.emails.send({
       from: "Monvera <orders@contact.monveraclothing.store>",
       to: ["julnanv@gmail.com"],
-      subject: `New Order: ${reference}`,
-      html: `<h1>New Order: ${reference}</h1><p>Customer: ${email}</p><p>Total: ₦${amount / 100}</p>`
+      subject: `New Monvera Order Secured: ${reference}`,
+      html: `
+        <div style="font-family: Arial, sans-serif;">
+          <h1>NEW ORDER SECURED 🚀</h1>
+          <hr />
+          <h3>Customer Details:</h3>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Name:</strong> ${shippingDetails.firstName} ${shippingDetails.lastName}</p>
+          <p><strong>Phone:</strong> ${shippingDetails.phone}</p>
+          
+          <h3>Logistics:</h3>
+          <p><strong>Delivery Route:</strong> ${shippingMethod}</p>
+          <p><strong>Address:</strong> ${shippingDetails.address}${shippingDetails.apartment ? `, ${shippingDetails.apartment}` : ""}</p>
+          <p><strong>Location:</strong> ${shippingDetails.lga}, ${shippingDetails.state} State</p>
+
+          <h3>Order Summary:</h3>
+          ${items.map((item: any) => `
+            <p><strong>${item.quantity}x ${item.name}</strong><br />
+            Size: ${item.size || "N/A"}</p>
+          `).join('')}
+          <hr />
+          <h2>Total Paid: ₦${amount / 100}</h2>
+        </div>
+      `
     });
 
     // 2. Send Customer Receipt
