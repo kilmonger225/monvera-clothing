@@ -97,6 +97,7 @@ export default function CheckoutPage() {
       toast.error("Checkout finalized, but email failed.");
       window.location.assign(`/success?reference=${reference.reference}`);
     }
+    
   };
 
   if (cartItems.length === 0) {
