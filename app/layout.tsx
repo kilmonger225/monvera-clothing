@@ -4,15 +4,30 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import { CartProvider } from "@/components/store/CartContext";
 import CartDrawer from "@/components/store/CartDrawer";
-import { Toaster } from "react-hot-toast"; // <-- Imported the Toaster
+import { Toaster } from "react-hot-toast";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
 
 const inter = Inter({ subsets: ["latin"] });
 
-
 export const metadata: Metadata = {
   title: "MONVERA CLOTHING | Everyday Excellence",
   description: "Premium streetwear. Heavyweight 285gsm essentials crafted for comfort, quality, and timeless style.",
+  openGraph: {
+    title: "MONVERA CLOTHING | Everyday Excellence",
+    description: "Premium streetwear. Heavyweight 285gsm essentials crafted for comfort, quality, and timeless style.",
+    url: "https://monveraclothing.store",
+    siteName: "Monvera Clothing",
+    images: [
+      {
+        url: "https://monveraclothing.store/og-image.jpg", // Ensure your image is in the public folder
+        width: 1200,
+        height: 630,
+        alt: "Monvera Clothing Preview",
+      },
+    ],
+    locale: "en_NG",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -21,7 +36,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    
     <html lang="en" className="scroll-smooth">
       <body className={`${inter.className} bg-[#FFFFFF] text-[#1A1A1A] antialiased selection:bg-[#1A1A1A] selection:text-[#FFFFFF]`}>
         
@@ -34,7 +48,6 @@ export default function RootLayout({
           </main>
         </CartProvider>
 
-        {/* --> THE TOASTER COMPONENT <-- */}
         <Toaster 
           position="bottom-center"
           toastOptions={{
@@ -59,7 +72,6 @@ export default function RootLayout({
             },
           }}
         />
-
       </body>
     </html>
   );
