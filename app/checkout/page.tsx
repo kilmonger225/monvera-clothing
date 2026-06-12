@@ -62,7 +62,7 @@ export default function CheckoutPage() {
     publicKey: "pk_test_2d10a6be710a17bc73423bbbc8c068d4d28ce196", 
   };
 
-  const handlePaystackSuccess = async (reference: any) => {
+ const handlePaystackSuccess = async (reference: any) => {
     const rawOrderDetails = {
       reference: reference.reference,
       email,
@@ -73,30 +73,30 @@ export default function CheckoutPage() {
     };
 
     const cleanOrderDetails = JSON.parse(JSON.stringify(rawOrderDetails));
-    const toastId = toast.loading("Securing your order...");
+    const toastId = toast.loading("Finalizing order...");
 
     try {
+      // 1. Database Save
       const dbResult = await saveOrderToDatabase(cleanOrderDetails);
-      
-      if (!dbResult?.success) {
-        throw new Error((dbResult as any)?.message || "Database failed to save the order");
-      }
+      if (!dbResult?.success) throw new Error("Database failed");
 
-      // 🔥 THE MISSING PIECE: This actually triggers your email notification!
+      // 2. Explicitly wait for the email
+      console.log("Attempting to send email...");
       const emailResult = await sendOrderNotification(cleanOrderDetails);
-      if (!emailResult?.success) {
-        console.warn("Notice: Email notification failed, but order is safe in DB.", emailResult);
-      }
+      console.log("Email result:", emailResult);
 
-      toast.success("Order secured!", { id: toastId });
-     clearCart();
-toast.success("Order secured! Please manually navigate to /success", { id: toastId });
+      // 3. Clear cart
+      clearCart();
 
-} catch (error: any) {
-  console.error("DEBUG STACK:", error.stack);
-  // This explicitly sends the error message back to the toast
-  toast.error(`DIAGNOSTIC: ${error.message || "Unknown error"}`, { id: toastId, duration: 10000 });
-}
+      // 4. Force hard redirect to ensure the browser leaves the current page
+      toast.success("Order secured!");
+      window.location.assign(`/success?reference=${reference.reference}`);
+
+    } catch (error: any) {
+      console.error("DEBUG:", error);
+      toast.error("Checkout finalized, but email failed.");
+      window.location.assign(`/success?reference=${reference.reference}`);
+    }
   };
 
   if (cartItems.length === 0) {
