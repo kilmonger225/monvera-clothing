@@ -45,12 +45,27 @@ export async function sendOrderNotification(orderData: any) {
       `
     });
 
-    // 2. Send Customer Receipt
+    // 2. Send Customer Receipt (Styled like image_699622.png)
     const customerEmail = await resend.emails.send({
       from: "Monvera <orders@contact.monveraclothing.store>",
       to: [email],
-      subject: `Your Monvera Receipt: ${reference}`,
-      html: `<h1>Order Confirmed</h1><p>Thank you for shopping with Monvera!</p>`
+      subject: `Your Monvera Order Receipt: ${reference}`,
+      html: `
+        <div style="font-family: Arial, sans-serif;">
+          <h1 style="text-transform: uppercase;">ORDER CONFIRMED</h1>
+          <hr />
+          <p>Hello ${shippingDetails.firstName},</p>
+          <p>We have received your order and are getting it ready for dispatch. We will send you another update once it ships.</p>
+          
+          <h3>Order Summary (${reference}):</h3>
+          ${items.map((item: any) => `
+            <p><strong>${item.quantity}x ${item.name}</strong> (Size: ${item.size || "N/A"})</p>
+          `).join('')}
+          <hr />
+          <h2>Total Paid: ₦${amount / 100}</h2>
+          <p>Thank you for shopping with Monvera.</p>
+        </div>
+      `
     });
 
     if (adminEmail.error || customerEmail.error) {
