@@ -19,8 +19,6 @@ const shippingOptions = [
 
 export default function CheckoutPage() {
   const { cartItems, clearCart } = useCart();
-  const router = useRouter();
-  
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -43,19 +41,10 @@ export default function CheckoutPage() {
   };
 
   const validateAndProceed = () => {
-    if (!email || !email.includes('@')) {
-      toast.error("Please enter a valid email");
-      return;
-    }
-    if (!firstName || !lastName || !phone) {
-      toast.error("Please fill in contact details");
-      return;
-    }
-    if (shippingMethodId !== 'pickup_atbu') {
-      if (!address || !selectedLGA || (!selectedState && shippingMethodId !== 'within_bauchi')) {
-        toast.error("Please fill out full shipping details");
-        return;
-      }
+    if (!email || !email.includes('@')) { toast.error("Please enter a valid email"); return; }
+    if (!firstName || !lastName || !phone) { toast.error("Please fill in contact details"); return; }
+    if (shippingMethodId !== 'pickup_atbu' && (!address || !selectedLGA || (!selectedState && shippingMethodId !== 'within_bauchi'))) {
+        toast.error("Please fill out full shipping details"); return;
     }
     setIsFormValid(true);
   };
@@ -68,28 +57,45 @@ export default function CheckoutPage() {
   };
 
   const handlePaystackSuccess = async (reference: any) => {
-    const rawOrderDetails = {
+    const fullName = `${firstName} ${lastName}`.trim();
+
+    // Building the clean payload directly with the product ID included
+    const cleanOrderDetails = {
       reference: reference.reference,
-      email,
-      amount: total * 100,
-      items: cartItems,
+      email: email,
+      amount: total,
+      name: fullName,
+      phone: phone,
       shippingMethod: shippingMethodId,
-      shippingDetails: { firstName, lastName, address, apartment, phone, state: shippingMethodId === 'within_bauchi' ? 'Bauchi' : selectedState, lga: selectedLGA }
+      shippingDetails: { 
+        firstName, lastName, address, apartment, phone, 
+        state: shippingMethodId === 'within_bauchi' ? 'Bauchi' : selectedState, 
+        lga: selectedLGA 
+      },
+      items: cartItems.map((item: any) => ({
+        id: item.id.split('-')[0], // REQUIRED FOR STOCK UPDATE!
+        name: item.name,
+        quantity: Number(item.quantity),
+        price: Number(item.price),
+        size: item.selectedSize || item.size || "N/A"
+      }))
     };
 
-    const cleanOrderDetails = JSON.parse(JSON.stringify(rawOrderDetails));
     const toastId = toast.loading("Finalizing order...");
 
     try {
       const dbResult = await saveOrderToDatabase(cleanOrderDetails);
-      if (!dbResult?.success) throw new Error("Database failed");
+      if (!dbResult?.success) throw new Error("Database failed"); 
+      
       await sendOrderNotification(cleanOrderDetails);
       clearCart();
+      toast.dismiss(toastId);
       toast.success("Order secured!");
       window.location.assign(`/success?reference=${reference.reference}`);
     } catch (error: any) {
-      toast.error("Checkout finalized, but email failed.");
-      window.location.assign(`/success?reference=${reference.reference}`);
+      toast.dismiss(toastId);
+      console.error("Transaction Error:", error);
+      toast.error("Payment verified, but order creation failed. Please contact support.");
     }
   };
 
@@ -106,7 +112,6 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen flex flex-col-reverse lg:flex-row bg-white">
-      {/* LEFT SIDE: FORM */}
       <div className="w-full lg:w-[55%] p-6 lg:p-12 xl:p-20">
         <div className="max-w-xl ml-auto">
           <h2 className="text-lg font-bold uppercase tracking-widest text-[#1A1A1A] mb-4">Contact</h2>
@@ -172,21 +177,20 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      {/* RIGHT SIDE: CART SUMMARY (THE PART THAT WAS MISSING) */}
       <div className="w-full lg:w-[45%] p-6 lg:p-12 xl:p-20 bg-[#FAFAFA] border-b lg:border-b-0 lg:border-l border-[#E5E5E5]">
         <div className="max-w-md mr-auto">
           <div className="flex flex-col gap-4 mb-8 max-h-[50vh] overflow-y-auto pr-2">
-            {cartItems.map((item) => (
+            {cartItems.map((item: any) => (
               <div key={item.id} className="flex items-center gap-4">
                 <div className="relative w-16 h-16 bg-[#E5E5E5] border border-gray-200 rounded-sm overflow-hidden flex-shrink-0">
-                  <img src={(item as any).imageFront || (item as any).image || "/placeholder.jpg"} alt={item.name} className="object-cover w-full h-full" />
+                  <img src={item.imageFront || item.image || "/placeholder.jpg"} alt={item.name} className="object-cover w-full h-full" />
                   <div className="absolute -top-2 -right-2 bg-gray-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full z-10">
                     {item.quantity}
                   </div>
                 </div>
                 <div className="flex-grow">
                   <h4 className="text-sm font-bold text-[#1A1A1A]">{item.name}</h4>
-                  <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                  <p className="text-xs text-gray-500">Size: {item.selectedSize || item.size || "N/A"}</p>
                 </div>
                 <p className="text-sm font-medium text-[#1A1A1A]">{formatNaira(item.price * item.quantity)}</p>
               </div>

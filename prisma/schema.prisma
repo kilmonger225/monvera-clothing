@@ -18,12 +18,29 @@ model Product {
   imageBack   String   
   createdAt   DateTime @default(now())
 }
+
 model Order {
-  id             String   @id @default(cuid())
-  reference      String   @unique
+  id             String      @id @default(cuid())
+  reference      String      @unique
   email          String
+  name           String?     // Added
+  phone          String?     // Added
   amount         Float
   shippingMethod String
-  status         String   @default("Pending")
-  createdAt      DateTime @default(now())
+  shippingDetails Json
+  status         String      @default("Pending")
+  createdAt      DateTime    @default(now())
+  
+  // Relation to the items
+  items          OrderItem[] 
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  name      String
+  size     String?
+  quantity  Int
+  price     Float
 }

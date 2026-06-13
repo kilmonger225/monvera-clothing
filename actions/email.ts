@@ -60,7 +60,7 @@ export async function sendOrderNotification(orderData: any) {
             Size: ${item.size || "N/A"}</p>
           `).join('')}
           <hr />
-          <h2>Total Paid: ₦${amount / 100}</h2>
+          <h2>Total Paid: ₦${amount}</h2>
         </div>
       `
     });
@@ -72,7 +72,7 @@ export async function sendOrderNotification(orderData: any) {
       subject: `Your Monvera Order Receipt: ${reference}`,
       html: `
         <div style="font-family: Arial, sans-serif;">
-          <h1 style="text-transform: uppercase;">ORDER CONFIRMED</h1>
+          <h1 style="text-transform: uppercase;">ORDER CONFIRMED🛒</h1>
           <hr />
           <p>Hello ${shippingDetails.firstName},</p>
           <p>We have received your order and are getting it ready for dispatch. We will send you another update once it ships.</p>
@@ -82,7 +82,7 @@ export async function sendOrderNotification(orderData: any) {
             <p><strong>${item.quantity}x ${item.name}</strong> (Size: ${item.size || "N/A"})</p>
           `).join('')}
           <hr />
-          <h2>Total Paid: ₦${amount / 100}</h2>
+          <h2>Total Paid: ₦${amount}</h2>
           <p>Thank you for shopping with Monvera.</p>
         </div>
       `

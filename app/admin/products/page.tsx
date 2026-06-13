@@ -43,13 +43,13 @@ export default async function AdminProducts() {
             ) :
             
              (
-              products.map((product) => (
+              products.map((product: any) => (
                 <tr
                   key={product.id}
                   className="border-b border-[#E5E5E5] hover:bg-[#F9F9F9] transition-colors"
-                >
-                 <DeleteButton key={product.id} productId={product.id} />
-                  <td className="p-4">
+                    >
+                     <td><DeleteButton key={product.id} productId={product.id} /></td>
+                     <td className="p-4">
                     <img
                       src={product.imageFront}
                       alt={product.name}
