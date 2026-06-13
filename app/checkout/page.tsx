@@ -53,7 +53,7 @@ export default function CheckoutPage() {
     reference: (new Date()).getTime().toString(),
     email: email.trim() || "customer@monvera.com", 
     amount: Math.round(total * 100), 
-    publicKey: "pk_test_2d10a6be710a17bc73423bbbc8c068d4d28ce196", 
+    publicKey: "pk_live_e4c992d3dc0d42259d61ce531f06fe754bcbc77d", 
   };
 
   const handlePaystackSuccess = async (reference: any) => {
