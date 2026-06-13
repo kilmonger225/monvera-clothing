@@ -1,28 +1,47 @@
-// 1. You must have these two imports at the very top!
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
-export function proxy(request: NextRequest) {
-  const isAdmin = request.cookies.get('isAdmin');
-  const pathname = request.nextUrl.pathname;
+export default function AdminLogin() {
+  const [password, setPassword] = useState("");
+  const router = useRouter();
 
-  if (pathname.startsWith('/admin')) {
+  const handleLogin = (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
+    // 1. Set the cookie
+    document.cookie = "isAdmin=true; path=/; max-age=86400"; 
     
-    // Let them access the login page normally
-    if (pathname.startsWith('/admin/login')) {
-      return NextResponse.next(); 
-    }
-
-    // If they are on any other admin page and DO NOT have the cookie, redirect to login
-    if (!isAdmin) {
-      return NextResponse.redirect(new URL('/admin/login', request.url));
-    }
+    // 2. Force a HARD navigation so the proxy.ts file runs and sees the cookie
+    window.location.href = "/admin"; 
+  } else {
+    // 3. Use a native browser alert just in case your toast notifications are hidden
+    alert("Invalid password! Check your .env.local file.");
   }
-
-  // Allow all non-admin routes to pass through
-  return NextResponse.next();
-}
-
-export const config = {
-  matcher: ['/admin/:path*'], 
 };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#FFFFFF]">
+      <form onSubmit={handleLogin} className="p-8 border border-[#E5E5E5] shadow-sm w-full max-w-md">
+        <h2 className="text-xl font-bold uppercase tracking-widest mb-6 text-[#1A1A1A] text-center">
+          Admin Access
+        </h2>
+        <input 
+          type="password" 
+          value={password} 
+          onChange={(e) => setPassword(e.target.value)} 
+          placeholder="Enter password" 
+          className="w-full p-4 border border-[#E5E5E5] mb-4 focus:outline-none focus:border-[#1A1A1A] transition-colors"
+        />
+        <button 
+          type="submit" 
+          className="w-full bg-[#1A1A1A] text-[#FFFFFF] py-4 font-bold uppercase tracking-widest hover:bg-black transition-colors"
+        >
+          Login
+        </button>
+      </form>
+    </div>
+  );
+}
