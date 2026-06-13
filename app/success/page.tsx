@@ -25,7 +25,7 @@ function SuccessContent() {
         We are preparing your Monvera heavyweight essentials for shipping.
       </p>
 
-      <div className="bg-[#FAFAFA] border border-[#E5E5E5] p-6 mb-10 inline-block text-left min-w-[300px]">
+      <div className="bg-[#FAFAFA] border border-[#E5E5E5] p-6 mb-10 inline-block text-center min-w-[300px]">
         <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Order Reference</p>
         <p className="text-lg font-mono font-bold text-[#1A1A1A]">
           {reference || "Processing..."}
