@@ -11,11 +11,11 @@ export default function AdminLogin() {
     e.preventDefault();
     // Simple password check (In production, use a secure API route/env variable)
     if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
-      document.cookie = "isAdmin=true; path=/; max-age=86400"; // Expires in 24 hours
-router.push("/admin/products");
-    } else {
-      toast.error("Invalid password");
-    }
+  // This sets the cookie that the proxy is looking for
+  document.cookie = "isAdmin=true; path=/; max-age=86400"; 
+  router.push("/admin/products");
+} else {
+  toast.error("Invalid password")}
   };
 
   return (
