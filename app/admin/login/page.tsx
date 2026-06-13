@@ -1,38 +1,28 @@
-"use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+// 1. You must have these two imports at the very top!
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export default function AdminLogin() {
-  const [password, setPassword] = useState("");
-  const router = useRouter();
+export function proxy(request: NextRequest) {
+  const isAdmin = request.cookies.get('isAdmin');
+  const pathname = request.nextUrl.pathname;
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Simple password check (In production, use a secure API route/env variable)
-    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
-  // This sets the cookie that the proxy is looking for
-  document.cookie = "isAdmin=true; path=/; max-age=86400"; 
-  router.push("/admin/products");
-} else {
-  toast.error("Invalid password")}
-  };
+  if (pathname.startsWith('/admin')) {
+    
+    // Let them access the login page normally
+    if (pathname.startsWith('/admin/login')) {
+      return NextResponse.next(); 
+    }
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <form onSubmit={handleLogin} className="p-8 border border-gray-200">
-        <h2 className="text-xl font-bold uppercase tracking-widest mb-6">Admin Access</h2>
-        <input 
-          type="password" 
-          value={password} 
-          onChange={(e) => setPassword(e.target.value)} 
-          placeholder="Enter password" 
-          className="w-full p-4 border border-[#E5E5E5] mb-4"
-        />
-        <button type="submit" className="w-full bg-[#1A1A1A] text-white py-4 font-bold uppercase tracking-widest">
-          Login
-        </button>
-      </form>
-    </div>
-  );
+    // If they are on any other admin page and DO NOT have the cookie, redirect to login
+    if (!isAdmin) {
+      return NextResponse.redirect(new URL('/admin/login', request.url));
+    }
+  }
+
+  // Allow all non-admin routes to pass through
+  return NextResponse.next();
 }
+
+export const config = {
+  matcher: ['/admin/:path*'], 
+};
