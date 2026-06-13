@@ -81,17 +81,18 @@ export default function ProductCard({ id, name, price, imageFront, imageBack, st
             </div>
           </div>
         ) : (
-          <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 transform translate-y-4 transition-all duration-300 ease-in-out group-hover:opacity-100 group-hover:translate-y-0 flex gap-2 z-10">
+          /* REMOVED: opacity-0, translate-y-4, group-hover:opacity-100, group-hover:translate-y-0 */
+          <div className="absolute inset-x-0 bottom-0 p-4 flex gap-2 z-10">
             <Link 
               href={`/product/${id}`} 
-              className="flex-1 bg-[#FFFFFF] text-[#1A1A1A] text-xs font-bold py-3 flex items-center justify-center uppercase tracking-wider hover:bg-[#1A1A1A] hover:text-[#FFFFFF] transition-colors"
+              className="flex-1 bg-[#FFFFFF] text-[#1A1A1A] border border-[#E5E5E5] text-xs font-bold py-3 flex items-center justify-center uppercase tracking-wider hover:bg-[#1A1A1A] hover:text-[#FFFFFF] transition-colors"
             >
               View Details
             </Link>
             <button 
               onClick={handleQuickAddClick} 
               disabled={isOutOfStock}
-              className={`p-3 flex items-center justify-center transition-colors ${isOutOfStock ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-[#FFFFFF] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-[#FFFFFF]"}`}
+              className={`p-3 border border-[#E5E5E5] flex items-center justify-center transition-colors ${isOutOfStock ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-[#FFFFFF] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-[#FFFFFF]"}`}
             >
               <ShoppingBag size={16} />
             </button>

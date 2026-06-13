@@ -6,7 +6,6 @@ import toast from "react-hot-toast";
 import Link from "next/link";
 
 export default function CartDrawer() {
-  // Destructuring exact values from your existing CartContext
   const { isOpen, closeCart, cartItems, removeFromCart, updateQuantity } = useCart();
 
   const handleRemove = (id: string) => {
@@ -25,8 +24,8 @@ export default function CartDrawer() {
       {/* Background Overlay */}
       <div className="fixed inset-0 bg-[#000000]/50 z-40 transition-opacity" onClick={closeCart} />
       
-      {/* Drawer Panel */}
-      <div className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-[#FFFFFF] z-50 shadow-2xl flex flex-col transform transition-transform duration-300">
+      {/* Drawer Panel - THE FIX IS HERE (changed w-full to w-[85vw]) */}
+      <div className="fixed top-0 right-0 h-full w-[85vw] sm:w-[400px] bg-[#FFFFFF] z-50 shadow-2xl flex flex-col transform transition-transform duration-300">
         <div className="flex items-center justify-between p-6 border-b border-[#E5E5E5]">
           <h2 className="text-xl font-bold uppercase tracking-widest text-[#1A1A1A]">Your Bag</h2>
           <button onClick={closeCart} className="text-[#1A1A1A] hover:text-[#1A1A1A]/70 transition-colors">
