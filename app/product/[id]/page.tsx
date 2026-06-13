@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
-import ProductDetailClient from "@/components/store/ProductDetailClient"; // We'll create this to handle the client-side state
+import ProductDetailClient from "@/components/store/ProductDetailClient"; 
+import BackButton from "@/./components/store/BackButton"; // Import our new client component
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -14,6 +15,11 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     notFound(); // This will trigger the Next.js not-found page
   }
 
-  // Pass the database product to a Client Component
-  return <ProductDetailClient product={product} />;
+  return (
+    <div className="min-h-screen bg-[#FFFFFF] p-6 lg:p-12 xl:p-20">
+      <BackButton />
+      {/* Pass the database product to a Client Component */}
+      <ProductDetailClient product={product} />
+    </div>
+  );
 }

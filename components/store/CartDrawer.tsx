@@ -30,7 +30,7 @@ export default function CartDrawer() {
       {/* Drawer Panel - Slides in and out */}
       {/* THE FIX: Changed to w-[60vw] and added dynamic translation classes */}
       <div 
-        className={`fixed top-0 right-0 h-full w-[60vw] sm:w-[400px] bg-[#FFFFFF] z-50 shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-full w-[75vw] sm:w-[400px] bg-[#FFFFFF] z-50 shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
