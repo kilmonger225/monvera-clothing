@@ -1,5 +1,5 @@
 "use client";
-
+import toast from "react-hot-toast";
 import React, { useState } from 'react';
 import { useCart } from "@/components/store/CartContext";
 
@@ -9,8 +9,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const sizes = ["S", "M", "L", "XL", "XXL"];
 
   const handleAddToCart = () => {
+    // 1. Replaced the alert with a sleek toast error
     if (!selectedSize) {
-      alert("Please select a size first!");
+      toast.error("Please select a size first!");
       return;
     }
     
@@ -22,7 +23,17 @@ export default function ProductDetailClient({ product }: { product: any }) {
       size: selectedSize,
       quantity: 1,
     });
-    alert(`Added ${product.name} (${selectedSize}) to cart!`);
+
+    // 2. Replaced the success alert with a styled toast notification!
+    toast.success(`${product.name} added to your bag! 🛍️`, {
+      position: 'top-center',
+      duration: 3000,
+      style: {
+        background: '#1A1A1A',
+        color: '#fff',
+        borderRadius: '4px', // Matches your Monvera aesthetic
+      }
+    });
   };
 
   return (
