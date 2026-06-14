@@ -20,7 +20,7 @@ const { openCart, cartCount } = useCart();
 
         {/* Center: Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-8">
-  <Link href="/shop" className="text-sm font-bold uppercase tracking-widest hover:text-[#000000] text-[#1A1A1A]/70 transition-colors">
+  <Link href="/#shop" className="text-sm font-bold uppercase tracking-widest hover:text-[#000000] text-[#1A1A1A]/70 transition-colors">
     Shop
   </Link>
   <Link href="/about" className="text-sm font-bold uppercase tracking-widest hover:text-[#000000] text-[#1A1A1A]/70 transition-colors">

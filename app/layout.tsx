@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer"; // <-- 1. Imported the Footer
 import { CartProvider } from "@/components/store/CartContext";
 import CartDrawer from "@/components/store/CartDrawer";
 import { Toaster } from "react-hot-toast";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,7 +21,7 @@ export const metadata: Metadata = {
     siteName: "Monvera Clothing",
     images: [
       {
-        url: "https://monveraclothing.store/og-image.jpg", // Ensure your image is in the public folder
+        url: "https://monveraclothing.store/og-image.jpg", 
         width: 1200,
         height: 630,
         alt: "Monvera Clothing Preview",
@@ -44,8 +46,11 @@ export default function RootLayout({
           <CartDrawer />
           <main className="min-h-screen flex flex-col">
             {children}
+            
             <WhatsAppButton />
           </main>
+          
+          <Footer /> {/* <-- 2. Dropped the Footer at the bottom of the page */}
         </CartProvider>
 
         <Toaster 

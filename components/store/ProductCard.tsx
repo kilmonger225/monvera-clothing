@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ShoppingBag, X } from "lucide-react";
 import { useCart } from "./CartContext";
+import toast from "react-hot-toast"; // <-- Make sure toast is imported!
 
 interface ProductProps {
   id: string;
@@ -11,12 +12,13 @@ interface ProductProps {
   price: number;
   imageFront: string;
   imageBack: string;
-  stock: number; // Added stock
+  stock: number;
 }
 
 export default function ProductCard({ id, name, price, imageFront, imageBack, stock }: ProductProps) {
   const [showSizes, setShowSizes] = useState(false);
-  const { addToCart } = useCart();
+  // 1. Pull cartItems out of the context to check current bag quantities
+  const { addToCart, cartItems } = useCart(); 
   const sizes = ["S", "M", "L", "XL", "XXL"];
   
   const isOutOfStock = stock === 0;
@@ -30,6 +32,21 @@ export default function ProductCard({ id, name, price, imageFront, imageBack, st
   const handleSizeSelect = (e: React.MouseEvent, size: string) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    // 2. Check how many of this item are already in the cart
+    const currentCartQuantity = cartItems
+      .filter((item) => item.productId === id)
+      .reduce((sum, item) => sum + item.quantity, 0);
+
+    // 3. Block the addition if it exceeds stock
+    if (currentCartQuantity >= stock) {
+      toast.error(`Only ${stock} available in stock!`, {
+        style: { background: '#ef4444', color: '#fff' }
+      });
+      setShowSizes(false); // Close the size menu
+      return; // Stop the function from adding to cart
+    }
+
     setShowSizes(false);
     
     addToCart({
@@ -39,6 +56,17 @@ export default function ProductCard({ id, name, price, imageFront, imageBack, st
       image: imageFront,
       size,
       quantity: 1,
+      maxStock: stock, // 4. Pass maxStock so the Cart Drawer knows the limit!
+    });
+
+    toast.success(`${name} added to your bag! 🛍️`, {
+      position: 'top-center',
+      duration: 3000,
+      style: {
+        background: '#1A1A1A',
+        color: '#fff',
+        borderRadius: '4px',
+      }
     });
   };
 
@@ -81,7 +109,6 @@ export default function ProductCard({ id, name, price, imageFront, imageBack, st
             </div>
           </div>
         ) : (
-          /* REMOVED: opacity-0, translate-y-4, group-hover:opacity-100, group-hover:translate-y-0 */
           <div className="absolute inset-x-0 bottom-0 p-4 flex gap-2 z-10">
             <Link 
               href={`/product/${id}`} 
@@ -105,7 +132,7 @@ export default function ProductCard({ id, name, price, imageFront, imageBack, st
           {name}
         </Link>
         <span className="text-sm font-medium text-[#1A1A1A]/80">
-          {isOutOfStock ? "SOLD OUT" : `₦${price.toFixed(2)}`}
+          {isOutOfStock ? "SOLD OUT" : `₦${price.toLocaleString()}`}
         </span>
       </div>
     </div>

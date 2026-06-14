@@ -15,8 +15,11 @@ model Product {
   price       Float
   stock       Int      @default(0)
   imageFront  String   
+  gallery     String?
   imageBack   String   
+  category    String   @default("tees")
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Order {

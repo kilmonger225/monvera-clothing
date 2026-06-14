@@ -19,7 +19,7 @@ export default function CartDrawer() {
 
   return (
     <>
-      {/* Background Overlay - Fades in and out */}
+      {/* Background Overlay */}
       <div 
         className={`fixed inset-0 bg-[#000000]/50 z-40 transition-opacity duration-300 ease-in-out ${
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
@@ -27,8 +27,7 @@ export default function CartDrawer() {
         onClick={closeCart} 
       />
       
-      {/* Drawer Panel - Slides in and out */}
-      {/* THE FIX: Changed to w-[60vw] and added dynamic translation classes */}
+      {/* Drawer Panel */}
       <div 
         className={`fixed top-0 right-0 h-full w-[75vw] sm:w-[400px] bg-[#FFFFFF] z-50 shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
@@ -68,7 +67,8 @@ export default function CartDrawer() {
                       <span className="w-8 text-center text-sm font-bold">{item.quantity}</span>
                       <button 
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="p-2 hover:bg-[#F5F5F5] transition-colors"
+                        disabled={item.quantity >= item.maxStock}
+                        className="p-2 hover:bg-[#F5F5F5] disabled:opacity-50 transition-colors"
                       >
                         <Plus size={14} />
                       </button>
@@ -92,6 +92,12 @@ export default function CartDrawer() {
 
         {cartItems.length > 0 && (
           <div className="p-6 border-t border-[#E5E5E5] bg-[#F5F5F5]">
+            <div className="flex justify-between items-center mb-6">
+              <span className="font-bold uppercase tracking-widest text-sm">Subtotal</span>
+              <span className="font-bold text-sm">
+                {formatNaira(cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0))}
+              </span>
+            </div>
             <Link 
               href="/checkout" 
               onClick={closeCart}

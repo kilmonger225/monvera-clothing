@@ -1,5 +1,3 @@
-
-
 import prisma from "@/lib/prisma";
 import { Package } from "lucide-react";
 import AddProductForm from "../AddProductForm";
@@ -26,6 +24,8 @@ export default async function AdminProducts() {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-[#F5F5F5] border-b border-[#E5E5E5] text-sm tracking-widest uppercase text-[#1A1A1A]/70">
+              {/* Added this blank header for the Delete Button column */}
+              <th className="p-4 font-bold w-16"></th> 
               <th className="p-4 font-bold">Image</th>
               <th className="p-4 font-bold">Product Name</th>
               <th className="p-4 font-bold">Price</th>
@@ -36,20 +36,22 @@ export default async function AdminProducts() {
           <tbody className="text-sm">
             {products.length === 0 ? (
               <tr>
-                <td colSpan={5} className="p-8 text-center text-[#1A1A1A]/50">
+                {/* Updated colSpan from 5 to 6 to span the whole new table width */}
+                <td colSpan={6} className="p-8 text-center text-[#1A1A1A]/50">
                   No products in inventory.
                 </td>
               </tr>
-            ) :
-            
-             (
+            ) : (
               products.map((product: any) => (
                 <tr
                   key={product.id}
                   className="border-b border-[#E5E5E5] hover:bg-[#F9F9F9] transition-colors"
-                    >
-                     <td><DeleteButton key={product.id} productId={product.id} /></td>
-                     <td className="p-4">
+                >
+                  {/* Padded the Delete button cell so it breathes nicely */}
+                  <td className="p-4 pl-6">
+                    <DeleteButton key={product.id} productId={product.id} />
+                  </td>
+                  <td className="p-4">
                     <img
                       src={product.imageFront}
                       alt={product.name}
@@ -61,7 +63,6 @@ export default async function AdminProducts() {
                     ₦{product.price.toLocaleString()}
                   </td>
                   <td className="p-4">
-                    {/* The interactive Stock Manager component */}
                     <StockManager 
                       productId={product.id} 
                       currentStock={product.stock} 

@@ -34,7 +34,7 @@ function SuccessContent() {
 
       <div>
         <Link 
-          href="/shop" 
+          href="/#shop" 
           className="inline-block bg-[#1A1A1A] text-white px-10 py-4 text-sm font-bold uppercase tracking-widest hover:bg-[#333333] transition-colors"
         >
           Continue Shopping

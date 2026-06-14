@@ -5,19 +5,24 @@ import { revalidatePath } from "next/cache";
 
 const prisma = new PrismaClient();
 
-export async function addProduct(formData: FormData) {
+export async function createNewDrop(formData: FormData) {
   try {
-    // 1. Extract the text data
+    // 1. Extract the basic product data
     const name = formData.get("name") as string;
-    const slug = name.toLowerCase().trim().replace(/[\s\W-]+/g, '-');
-    
-    // Adding a fallback in case your form doesn't have a description input yet
-    const description = (formData.get("description") as string) || "Premium Monvera Drop"; 
-    
     const price = parseFloat(formData.get("price") as string);
-    const stock = parseInt(formData.get("stock") as string); 
+    const stock = parseInt(formData.get("stock") as string);
+    const category = formData.get("category") as string;
+    const description = (formData.get("description") as string) || "Premium Monvera Drop";
+    
+    // --> NEW: Extract the gallery string from the form
+    const gallery = formData.get("gallery") as string; 
+    
+    // 2. Generate a unique slug to prevent "Unique constraint" errors
+    const baseSlug = name.toLowerCase().trim().replace(/[\s\W-]+/g, '-');
+    const randomHash = Math.random().toString(36).substring(2, 7);
+    const slug = `${baseSlug}-${randomHash}`;
 
-    // 2. Extract the Cloudinary URL strings (No physical files here!)
+    // 3. Extract the image URLs
     const imageFront = formData.get("frontImageUrl") as string;
     const imageBack = formData.get("backImageUrl") as string;
 
@@ -25,7 +30,9 @@ export async function addProduct(formData: FormData) {
       throw new Error("Both front and back images are required to drop a product.");
     }
 
-    // 3. Command Prisma to save the complete garment profile to the Neon database
+    console.log("Saving new product:", { name, category, slug });
+
+    // 4. Save to Database
     await prisma.product.create({
       data: {
         name,
@@ -33,25 +40,25 @@ export async function addProduct(formData: FormData) {
         description,
         price,
         stock,
+        category,
         imageFront,
         imageBack,
+        gallery, // --> NEW: Save the gallery string to the database
       },
     });
 
-    // 4. Instantly refresh the storefront and admin panel
-    revalidatePath("/shop");
+    // 5. THE FIX: Force Next.js to refresh the homepage snapshot
+    revalidatePath("/"); 
+    revalidatePath("/shop", "layout");
     revalidatePath("/admin/products");
-    
+
     return { success: true };
   } catch (error) {
     console.error("Failed to create product:", error);
-    return { success: false };
+    return { success: false, message: (error as Error).message };
   }
 }
 
-// --------------------------------------------------------
-// Your existing stock update function remains unchanged!
-// --------------------------------------------------------
 export async function updateProductStock(id: string, newStock: number) {
   try {
     await prisma.product.update({
@@ -59,7 +66,6 @@ export async function updateProductStock(id: string, newStock: number) {
       data: { stock: newStock },
     });
     
-    // Refresh the pages so the new stock number shows up immediately
     revalidatePath("/admin/products"); 
     revalidatePath("/shop");
     

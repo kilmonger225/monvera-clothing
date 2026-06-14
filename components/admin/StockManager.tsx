@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { updateProductStock } from "@/app/actions/product"; 
+import { updateProductStock } from "@/app/shopActions";
 
 export default function StockManager({ productId, currentStock }: { productId: string, currentStock: number }) {
   const [stock, setStock] = useState(currentStock);
