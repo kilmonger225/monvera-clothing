@@ -1,12 +1,33 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import toast from "react-hot-toast";
+
 export default function Footer() {
+  const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setIsSubmitting(true);
+
+    // TODO: Replace this timeout with your actual API call (e.g., Mailchimp or your database)
+    // Example: await fetch('/api/subscribe', { method: 'POST', body: JSON.stringify({ email }) })
+    
+    setTimeout(() => {
+      toast.success("You are on the list! Welcome to Monvera.");
+      setEmail("");
+      setIsSubmitting(false);
+    }, 1000);
+  };
+
   return (
     <footer className="w-full flex flex-col mt-20">
       {/* 1. NEWSLETTER SECTION */}
       <div className="bg-[#F5F5F5] py-24 px-6 flex flex-col items-center justify-center text-center">
-        {/* Logo/Graphic Placeholder (Matches the top graphic in your screenshot) */}
         <div className="mb-8 select-none">
           <h2 className="text-5xl font-black tracking-tighter text-[#1A1A1A]">
             MONVERA<span className="text-[#1A1A1A]/30">.</span>
@@ -20,19 +41,22 @@ export default function Footer() {
           Be the first to know about new collections, limited releases, and exclusive offers.
         </p>
         
-        <form className="w-full max-w-md flex flex-col gap-3" onSubmit={(e) => e.preventDefault()}>
+        <form className="w-full max-w-md flex flex-col gap-3" onSubmit={handleSubscribe}>
           <input 
             type="email" 
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email" 
             className="w-full px-4 py-4 border border-[#E5E5E5] bg-[#FFFFFF] text-sm focus:outline-none focus:border-[#1A1A1A] transition-colors"
             required
+            disabled={isSubmitting}
           />
-          {/* Using your brand's signature dark color for the button to maintain theme consistency */}
           <button 
             type="submit" 
-            className="w-full bg-[#1A1A1A] text-[#FFFFFF] px-4 py-4 text-sm font-bold uppercase tracking-widest hover:bg-black transition-colors"
+            disabled={isSubmitting}
+            className="w-full bg-[#1A1A1A] text-[#FFFFFF] px-4 py-4 text-sm font-bold uppercase tracking-widest hover:bg-black transition-colors disabled:opacity-70"
           >
-            Subscribe
+            {isSubmitting ? "Subscribing..." : "Subscribe"}
           </button>
         </form>
       </div>
@@ -40,14 +64,12 @@ export default function Footer() {
       {/* 2. NAVIGATION LINKS SECTION */}
       <div className="bg-[#111111] text-[#FFFFFF] pt-20 pb-10 px-6 lg:px-12 xl:px-20">
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-12 mb-20">
-          {/* Shop Column */}
           <div className="flex flex-col">
             <h4 className="text-sm font-bold uppercase tracking-widest mb-6">Shop</h4>
             <Link href="/shop" className="text-sm text-[#FFFFFF]/60 hover:text-[#FFFFFF] transition-colors mb-4">New Arrivals</Link>
             <Link href="/shop" className="text-sm text-[#FFFFFF]/60 hover:text-[#FFFFFF] transition-colors mb-4">Best Sellers</Link>
           </div>
 
-          {/* Help Column */}
           <div className="flex flex-col">
             <h4 className="text-sm font-bold uppercase tracking-widest mb-6">Help</h4>
             <Link href="/privacy" className="text-sm text-[#FFFFFF]/60 hover:text-[#FFFFFF] transition-colors mb-4">Privacy Policy</Link>
@@ -57,7 +79,6 @@ export default function Footer() {
             <Link href="/contact" className="text-sm text-[#FFFFFF]/60 hover:text-[#FFFFFF] transition-colors mb-4">Contact Us</Link>
           </div>
 
-          {/* Products Column */}
           <div className="flex flex-col">
             <h4 className="text-sm font-bold uppercase tracking-widest mb-6">Products</h4>
             <Link href="/shop/tees" className="text-sm text-[#FFFFFF]/60 hover:text-[#FFFFFF] transition-colors mb-4">Heavyweight Tees</Link>
@@ -69,7 +90,6 @@ export default function Footer() {
         {/* 3. BOTTOM BRANDING BAR */}
         <div className="max-w-5xl mx-auto border-t border-[#FFFFFF]/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            
             <span className="text-sm font-bold uppercase tracking-widest">Monvera Collection</span>
           </div>
           
@@ -80,10 +100,10 @@ export default function Footer() {
           <div className="flex items-center gap-4">
             <a href="https://instagram.com" target="_blank" rel="noreferrer" className="text-[#FFFFFF]/60 hover:text-[#FFFFFF] transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-  <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
-  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-  <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
-</svg>
+                <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+              </svg>
             </a>
           </div>
         </div>

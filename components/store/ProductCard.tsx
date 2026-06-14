@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ShoppingBag, X } from "lucide-react";
 import { useCart } from "./CartContext";
-import toast from "react-hot-toast"; // <-- Make sure toast is imported!
+import toast from "react-hot-toast";
 
 interface ProductProps {
   id: string;
@@ -17,7 +17,6 @@ interface ProductProps {
 
 export default function ProductCard({ id, name, price, imageFront, imageBack, stock }: ProductProps) {
   const [showSizes, setShowSizes] = useState(false);
-  // 1. Pull cartItems out of the context to check current bag quantities
   const { addToCart, cartItems } = useCart(); 
   const sizes = ["S", "M", "L", "XL", "XXL"];
   
@@ -33,18 +32,16 @@ export default function ProductCard({ id, name, price, imageFront, imageBack, st
     e.preventDefault();
     e.stopPropagation();
     
-    // 2. Check how many of this item are already in the cart
     const currentCartQuantity = cartItems
       .filter((item) => item.productId === id)
       .reduce((sum, item) => sum + item.quantity, 0);
 
-    // 3. Block the addition if it exceeds stock
     if (currentCartQuantity >= stock) {
       toast.error(`Only ${stock} available in stock!`, {
         style: { background: '#ef4444', color: '#fff' }
       });
-      setShowSizes(false); // Close the size menu
-      return; // Stop the function from adding to cart
+      setShowSizes(false); 
+      return; 
     }
 
     setShowSizes(false);
@@ -56,7 +53,7 @@ export default function ProductCard({ id, name, price, imageFront, imageBack, st
       image: imageFront,
       size,
       quantity: 1,
-      maxStock: stock, // 4. Pass maxStock so the Cart Drawer knows the limit!
+      maxStock: stock, 
     });
 
     toast.success(`${name} added to your bag! 🛍️`, {
@@ -65,14 +62,14 @@ export default function ProductCard({ id, name, price, imageFront, imageBack, st
       style: {
         background: '#1A1A1A',
         color: '#fff',
-        borderRadius: '4px',
+        borderRadius: '8px',
       }
     });
   };
 
   return (
     <div className="group flex flex-col">
-      <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#F5F5F5] mb-4 cursor-pointer">
+      <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#F5F5F5] mb-4 cursor-pointer rounded-lg">
         
         <Link href={`/product/${id}`} className="absolute inset-0 z-0">
           <img
@@ -89,11 +86,11 @@ export default function ProductCard({ id, name, price, imageFront, imageBack, st
         
         {/* Dynamic Overlay */}
         {showSizes ? (
-          <div className="absolute inset-x-0 bottom-0 p-4 bg-[#FFFFFF]/95 backdrop-blur-sm transform transition-all duration-300 z-20 flex flex-col border-t border-[#E5E5E5]">
-            <div className="flex justify-between items-center mb-3 px-1">
-              <span className="text-xs font-bold uppercase tracking-widest text-[#1A1A1A]">Select Size</span>
+          <div className="absolute inset-x-0 bottom-0 p-2 md:p-4 bg-[#FFFFFF]/95 backdrop-blur-sm transform transition-all duration-300 z-20 flex flex-col border-t border-[#E5E5E5]">
+            <div className="flex justify-between items-center mb-2 md:mb-3 px-1">
+              <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-[#1A1A1A]">Select Size</span>
               <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowSizes(false); }} className="text-[#1A1A1A] hover:text-[#000000]">
-                <X size={14} />
+                <X className="w-4 h-4" />
               </button>
             </div>
             <div className="flex justify-between gap-1">
@@ -101,7 +98,7 @@ export default function ProductCard({ id, name, price, imageFront, imageBack, st
                 <button 
                   key={size}
                   onClick={(e) => handleSizeSelect(e, size)}
-                  className="flex-1 py-2 text-xs font-bold bg-[#F5F5F5] text-[#1A1A1A] hover:bg-[#000000] hover:text-[#FFFFFF] transition-colors"
+                  className="flex-1 py-1.5 md:py-2 text-[10px] md:text-xs font-bold bg-[#F5F5F5] rounded-md text-[#1A1A1A] hover:bg-[#000000] hover:text-[#FFFFFF] transition-colors"
                 >
                   {size}
                 </button>
@@ -109,19 +106,19 @@ export default function ProductCard({ id, name, price, imageFront, imageBack, st
             </div>
           </div>
         ) : (
-          <div className="absolute inset-x-0 bottom-0 p-4 flex gap-2 z-10">
+          <div className="absolute inset-x-0 bottom-0 p-2 md:p-4 flex gap-1.5 md:gap-2 z-10">
             <Link 
               href={`/product/${id}`} 
-              className="flex-1 bg-[#FFFFFF] text-[#1A1A1A] border border-[#E5E5E5] text-xs font-bold py-3 flex items-center justify-center uppercase tracking-wider hover:bg-[#1A1A1A] hover:text-[#FFFFFF] transition-colors"
+              className="flex-1 bg-[#FFFFFF] text-[#1A1A1A] border border-[#E5E5E5] text-[9px] md:text-xs font-bold py-1.5 md:py-3 rounded-lg flex items-center justify-center uppercase tracking-wider hover:bg-[#1A1A1A] hover:text-[#FFFFFF] transition-colors"
             >
               View Details
             </Link>
             <button 
               onClick={handleQuickAddClick} 
               disabled={isOutOfStock}
-              className={`p-3 border border-[#E5E5E5] flex items-center justify-center transition-colors ${isOutOfStock ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-[#FFFFFF] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-[#FFFFFF]"}`}
+              className={`p-1.5 md:p-3 rounded-lg border border-[#E5E5E5] flex items-center justify-center transition-colors ${isOutOfStock ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-[#FFFFFF] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-[#FFFFFF]"}`}
             >
-              <ShoppingBag size={16} />
+              <ShoppingBag className="w-3.5 h-3.5 md:w-5 md:h-5" />
             </button>
           </div>
         )}
