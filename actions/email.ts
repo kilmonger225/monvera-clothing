@@ -38,7 +38,7 @@ export async function sendOrderNotification(orderData: any) {
     // 1. Send Admin Email (Styled like image_69fbf6.png)
     const adminEmail = await resend.emails.send({
       from: "Monvera <orders@contact.monveraclothing.store>",
-      to: ["julnanv@gmail.com"],
+      to: ["monveraclothingstore@gmail.com"],
       subject: `New Monvera Order Secured: ${reference}`,
       html: `
         <div style="font-family: Arial, sans-serif;">
